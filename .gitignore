@@ -1,0 +1,46 @@
+### Node
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+### Build outputs
+dist/
+build/
+/.expo/
+/.expo-shared/
+/.turbo/
+
+### TypeScript
+*.tsbuildinfo
+
+### Environment
+.env
+.env.local
+.env.*.local
+
+### Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+### IDEs
+.vscode/
+.idea/
+
+### MacOS/Windows
+.DS_Store
+Thumbs.db
+
+### Expo / React Native
+android/
+ios/
+*.keystore
+
+### Misc
+.cache/
+.parcel-cache/
+.next/
+/.vite/
+.expo/
