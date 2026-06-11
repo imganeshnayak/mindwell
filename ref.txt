@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Steps Challenge - Grounded Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#1c2a22",
+                    "on-error-container": "#93000a",
+                    "on-tertiary": "#ffffff",
+                    "tertiary-container": "#3c2000",
+                    "outline": "#737874",
+                    "on-secondary": "#ffffff",
+                    "outline-variant": "#c3c8c2",
+                    "on-secondary-fixed-variant": "#354c41",
+                    "primary-fixed-dim": "#bacbbf",
+                    "error-container": "#ffdad6",
+                    "surface-container-high": "#eae8e6",
+                    "on-tertiary-fixed": "#2c1600",
+                    "on-secondary-container": "#52695e",
+                    "surface-tint": "#536258",
+                    "surface-bright": "#fbf9f7",
+                    "secondary-fixed-dim": "#b3ccbf",
+                    "secondary-fixed": "#cee9da",
+                    "secondary": "#4c6358",
+                    "on-primary-fixed": "#111e17",
+                    "tertiary-fixed-dim": "#f0bd8b",
+                    "on-primary-container": "#829287",
+                    "on-error": "#ffffff",
+                    "background": "#fbf9f7",
+                    "primary-fixed": "#d6e7da",
+                    "on-tertiary-container": "#b28557",
+                    "on-background": "#1b1c1b",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container": "#efedeb",
+                    "error": "#ba1a1a",
+                    "surface-variant": "#e4e2e0",
+                    "tertiary-fixed": "#ffdcbd",
+                    "secondary-container": "#cee9da",
+                    "tertiary": "#1f0e00",
+                    "on-surface": "#1b1c1b",
+                    "surface": "#fbf9f7",
+                    "primary": "#07150e",
+                    "on-primary": "#ffffff",
+                    "surface-dim": "#dbdad8",
+                    "on-secondary-fixed": "#092017",
+                    "inverse-on-surface": "#f2f0ee",
+                    "inverse-surface": "#30302f",
+                    "on-primary-fixed-variant": "#3b4a41",
+                    "on-surface-variant": "#434844",
+                    "inverse-primary": "#bacbbf",
+                    "on-tertiary-fixed-variant": "#623f18",
+                    "surface-container-low": "#f5f3f1",
+                    "surface-container-highest": "#e4e2e0"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap-md": "16px",
+                    "stack-gap-lg": "32px",
+                    "section-margin": "48px",
+                    "container-padding": "24px",
+                    "stack-gap-sm": "8px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Public Sans"],
+                    "headline-xl": ["Public Sans"],
+                    "body-md": ["Public Sans"],
+                    "body-lg": ["Public Sans"],
+                    "headline-lg-mobile": ["Public Sans"],
+                    "headline-md": ["Public Sans"],
+                    "headline-lg": ["Public Sans"],
+                    "label-md": ["Public Sans"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-xl": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "34px", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .medal-gold { color: #d4af37; }
+        .medal-silver { color: #aaa9ad; }
+        .medal-bronze { color: #cd7f32; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="w-full top-0 flex justify-between items-center px-container-padding py-4 w-full bg-surface dark:bg-surface-dim">
+<div class="flex items-center gap-3">
+<img alt="User Profile" class="w-10 h-10 rounded-full object-cover border-2 border-secondary-container" data-alt="A professional close-up portrait of a woman with a serene expression, softly lit by natural morning light in a minimalist studio environment. The image uses a soft, organic color palette with muted sage and oatmeal tones, reflecting a grounded and calm personality for a wellness application profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKbr8N2sr-cPH99ZwePrt5hRl1Al59TJ6-1S7EiutNLjkk8kb7KLClAicmmHWiNKqiPATQq2QWAIHUSIVRMcA1c0wUThMgVe-ih2R9Y90sT-uiCjFxqsESgE5AdmZxHnMPcLJiwSVqZ4L_i8kQzKN-1bpMNku6nOXUQOlaPyZqWG9vdRj1X1EA05pIuF8bEiI8u3PgL-agUlYD6XaQSP8guQUS5KX3YFBBTtG994oFPu9ANoa9xUULkC3PMZ1ME4C5RSc4bT0ky7g"/>
+<h1 class="font-headline-md text-headline-md text-primary">Steps Challenge</h1>
+</div>
+<button class="hover:opacity-80 transition-opacity active:scale-95 transition-transform text-primary">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</header>
+<main class="px-container-padding mt-4">
+<!-- Top Section: Your Weekly Progress -->
+<section class="mb-section-margin">
+<div class="bg-surface-container-lowest rounded-[24px] p-5 shadow-[0px_10px_30px_rgba(28,42,34,0.05)] border border-[#8FA89B]/10">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary mb-1">Your Weekly Progress</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Consistent momentum this week.</p>
+</div>
+<div class="flex flex-col items-center bg-secondary-container/30 px-3 py-2 rounded-xl">
+<span class="material-symbols-outlined text-on-secondary-container mb-1" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span class="font-label-sm text-label-sm text-on-secondary-container text-center">Trailblazer<br/>Level 5</span>
+</div>
+</div>
+<!-- Simple Bar Chart Visualization -->
+<div class="flex items-end justify-between h-32 gap-2 px-2">
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container rounded-t-lg transition-all hover:bg-secondary-fixed-dim" style="height: 60%;"></div>
+<span class="font-label-sm text-label-sm mt-2 opacity-60">M</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container rounded-t-lg transition-all hover:bg-secondary-fixed-dim" style="height: 85%;"></div>
+<span class="font-label-sm text-label-sm mt-2 opacity-60">T</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container rounded-t-lg transition-all hover:bg-secondary-fixed-dim" style="height: 45%;"></div>
+<span class="font-label-sm text-label-sm mt-2 opacity-60">W</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-on-secondary-container rounded-t-lg transition-all" style="height: 95%;"></div>
+<span class="font-label-sm text-label-sm mt-2 font-bold">T</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container rounded-t-lg transition-all hover:bg-secondary-fixed-dim" style="height: 30%;"></div>
+<span class="font-label-sm text-label-sm mt-2 opacity-60">F</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container rounded-t-lg transition-all hover:bg-secondary-fixed-dim" style="height: 70%;"></div>
+<span class="font-label-sm text-label-sm mt-2 opacity-60">S</span>
+</div>
+<div class="flex flex-col items-center flex-1">
+<div class="w-full bg-secondary-container rounded-t-lg transition-all hover:bg-secondary-fixed-dim" style="height: 55%;"></div>
+<span class="font-label-sm text-label-sm mt-2 opacity-60">S</span>
+</div>
+</div>
+<div class="mt-6 flex justify-between items-center bg-surface-container-low p-4 rounded-xl">
+<div class="text-center flex-1 border-r border-outline-variant/30">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Daily</p>
+<p class="font-headline-md text-headline-md text-primary">8,432</p>
+</div>
+<div class="text-center flex-1">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Weekly</p>
+<p class="font-headline-md text-headline-md text-primary">59,024</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Middle Section: Community Leaderboard -->
+<section>
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-primary">Leaderboard</h2>
+<!-- Toggle Switch -->
+<div class="flex p-1 bg-surface-container rounded-full w-48 relative overflow-hidden">
+<button class="relative z-10 flex-1 py-1.5 text-label-md font-label-md rounded-full transition-colors text-on-surface" id="tab-global" onclick="toggleTab('global')">Global</button>
+<button class="relative z-10 flex-1 py-1.5 text-label-md font-label-md rounded-full transition-colors text-on-surface-variant" id="tab-friends" onclick="toggleTab('friends')">Friends</button>
+<div class="absolute left-1 top-1 bottom-1 w-[calc(50%-4px)] bg-surface-container-lowest shadow-sm rounded-full transition-transform duration-300 ease-out" id="tab-indicator"></div>
+</div>
+</div>
+<!-- Leaderboard List -->
+<div class="flex flex-col gap-4">
+<!-- Rank 1 -->
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-[24px] shadow-sm border border-secondary-container/10">
+<div class="flex items-center gap-4">
+<div class="w-8 text-center">
+<span class="material-symbols-outlined medal-gold text-2xl" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<img alt="User Rank 1" class="w-12 h-12 rounded-full object-cover" data-alt="A detailed close-up portrait of a cheerful person in an outdoor natural setting. The background shows soft, blurred greenery under warm sunlight. The overall aesthetic is clean, bright, and airy, following a high-end wellness app design system with natural textures and earthy tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYQn6pcTzz38eTneS9qm8_kojwUFCHu_5TB0XCWHdPSZ4EWmy9MzEXo3RDdtRLwXp6I4Kw52AlISp9Ioy327E_JkHERbPPojtaxAlUSNuCJVBKFDcVu5F4Gy2ZRV86N1dQXzATyQvIFAlwMUy9urLKCKJTY7TQyChxtGwIoBp5i7XGjvha_-SbJEMK9I0vXofCEm_j2tklvqollE7-BLCmRMt5Y09-eHgdDNSp4Zzkj85DYt9TEawtN2YS-PI9Tv9TvN6RH5Sa79Q"/>
+<div>
+<p class="font-label-md text-label-md text-primary">Elena Gilbert</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Top Trailblazer</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-primary">82,410</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Steps</p>
+</div>
+</div>
+<!-- Rank 2 -->
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-[24px] shadow-sm border border-secondary-container/10">
+<div class="flex items-center gap-4">
+<div class="w-8 text-center">
+<span class="material-symbols-outlined medal-silver text-2xl" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<img alt="User Rank 2" class="w-12 h-12 rounded-full object-cover" data-alt="A minimalist and high-quality headshot of an individual with a serene, focused look. The lighting is soft and directional, creating subtle depth. The color palette incorporates soft beiges and deep forest greens, keeping consistent with the Grounded Sanctuary brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6cDvAQTh9voyWXAPGmKDAcR4UDoRNjYhEphNUzxchShH8D1YgejvR73Y-XOwrhhPo_Wq29GWsGvQ2ViUC3AK33SZjQQP9VGcP-JjBdk40E-_818-FEPZ-cst4e7vL8kJRw_HEetYkQzTLMKuzTGhnVD-hKeqITpZS9DAGNGT9GIZOx8Sz3Wqtq3Z6HyD_S4PNEVgFpKv1qNsWDCYv4XbJdZNDLJRojCyKawGEyIHSI1SDQHt3l67aH0Nu7o7lVngsOMfp12PcAR8"/>
+<div>
+<p class="font-label-md text-label-md text-primary">Marcus Thorne</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Consistent Walker</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-primary">79,905</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Steps</p>
+</div>
+</div>
+<!-- Rank 3 -->
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest rounded-[24px] shadow-sm border border-secondary-container/10">
+<div class="flex items-center gap-4">
+<div class="w-8 text-center">
+<span class="material-symbols-outlined medal-bronze text-2xl" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+</div>
+<img alt="User Rank 3" class="w-12 h-12 rounded-full object-cover" data-alt="A portrait of a woman with a genuine smile, set against a softly blurred, neutral background. The lighting is bright and clean, emphasizing healthy skin and a calm demeanor. The design style uses premium, soft minimalist photography suitable for a high-end health and sanctuary application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4matWKjKuhyeIqTd8ghriIjtefPsx_LsxUjuyC2RmkuxBmgI01-AB3kFxKVn8bAZ3nKfassk0kxUxkT34RK8KvbqZ7kkNSguklLKyRhmbdE_XZsIBJ8pzfkfyFYP1iJijRckPLC9MO5pikj2CM_HCQfXI5tZpPD55ePR4iu0FoAJwi565VxOlzXIWP_Belizu78sBQptJU7An9yL77G5JC6RZSgOUT1KWu-1QDBNRbACLVNds-CFc5TssqIsJTHdR3dIW46WptS4"/>
+<div>
+<p class="font-label-md text-label-md text-primary">Sasha Lee</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Daily Streaker</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-primary">76,211</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Steps</p>
+</div>
+</div>
+<!-- Rank 4-11 Placeholder Spacer -->
+<div class="flex flex-col items-center py-2 opacity-20">
+<span class="material-symbols-outlined">more_vert</span>
+</div>
+<!-- Current User Highlight (Rank 12) -->
+<div class="flex items-center justify-between p-5 bg-secondary-container/40 rounded-[24px] border-2 border-on-secondary-container/10 ring-4 ring-secondary-container/10">
+<div class="flex items-center gap-4">
+<div class="w-8 text-center font-headline-md text-on-secondary-container">12</div>
+<img alt="Your Rank" class="w-14 h-14 rounded-full object-cover border-2 border-on-secondary-container" data-alt="A high-quality, professional avatar photo of a user for a wellness platform. The subject has a peaceful, focused expression, set in a light-filled, minimalist room with organic textures like linen and light wood. The color palette is composed of soft sage greens and warm terracottas." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEtQgHuf0Z_YH_72v3Q8Z4bVA7X0X9xXtCsnMmCN2i1quy1beokCr4RhHiFeTgpoE4k4suSXcUeSFEfDBzubUV3HugX2KlG1ddv4o6AzVAHTIWuSTHYcRcBxp9aT6P2DziRbT6VPqdQW_LutNtcZuiamEX6xRunLbN4LOQNbIW05JCNeIi2fWyoNu-O6niVSsISQNTo86tfVJF5XBlgKppod52yg2kVJEtjjpm0P_4D5y-jlOO6bfm3MxulIZcAMOXm2XOuXyEW4c"/>
+<div>
+<p class="font-headline-md text-headline-md text-primary">You</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Top 5% this week</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">59,024</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase">Steps</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-surface-container-lowest dark:bg-primary-container shadow-[0px_-10px_30px_rgba(28,42,34,0.05)] rounded-t-xl">
+<!-- Sanctuary -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-surface-container-high dark:hover:bg-secondary-fixed-dim rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">spa</span>
+<span class="font-label-md text-label-md">Sanctuary</span>
+</a>
+<!-- Biometrics (ACTIVE) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-5 py-1 active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">monitoring</span>
+<span class="font-label-md text-label-md">Biometrics</span>
+</a>
+<!-- Marketplace -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant px-5 py-1 hover:bg-surface-container-high dark:hover:bg-secondary-fixed-dim rounded-full active:scale-90 transition-all duration-200" href="#">
+<span class="material-symbols-outlined">storefront</span>
+<span class="font-label-md text-label-md">Marketplace</span>
+</a>
+</nav>
+<script>
+        function toggleTab(tab) {
+            const indicator = document.getElementById('tab-indicator');
+            const globalBtn = document.getElementById('tab-global');
+            const friendsBtn = document.getElementById('tab-friends');
+
+            if (tab === 'global') {
+                indicator.style.transform = 'translateX(0)';
+                globalBtn.classList.remove('text-on-surface-variant');
+                globalBtn.classList.add('text-on-surface');
+                friendsBtn.classList.remove('text-on-surface');
+                friendsBtn.classList.add('text-on-surface-variant');
+            } else {
+                indicator.style.transform = 'translateX(100%)';
+                friendsBtn.classList.remove('text-on-surface-variant');
+                friendsBtn.classList.add('text-on-surface');
+                globalBtn.classList.remove('text-on-surface');
+                globalBtn.classList.add('text-on-surface-variant');
+            }
+        }
+    </script>
+</body></html>

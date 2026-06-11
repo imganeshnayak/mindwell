@@ -1,9 +1,10 @@
 import { View, Text, StyleSheet, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, Moon, Footprints, Lightbulb } from 'lucide-react-native';
+import { Settings, Moon, Footprints, Lightbulb, Utensils, Croissant, Sandwich, Soup, Cookie, Plus } from 'lucide-react-native';
 import { TouchableOpacity } from 'react-native';
 import Svg, { Circle, Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Colors } from '@/constants/colors';
+import { router } from 'expo-router';
 
 function CircularProgress({
   value,
@@ -108,7 +109,7 @@ export default function BiometricsScreen() {
         <Text style={styles.pageSubtitle}>Listening to your body's natural rhythm.</Text>
 
         {/* Movement Card */}
-        <View style={styles.card}>
+        <TouchableOpacity style={styles.card} onPress={() => router.push('/steps-challenge')} activeOpacity={0.85}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardLabel}>MOVEMENT</Text>
             <Footprints size={22} color={Colors.textSecondary} strokeWidth={1.5} />
@@ -121,7 +122,7 @@ export default function BiometricsScreen() {
             </View>
           </View>
           <Text style={styles.cardStat}>Today's Steps: 1,200</Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Sleep Card */}
         <View style={styles.card}>
@@ -137,6 +138,70 @@ export default function BiometricsScreen() {
           <View style={styles.sleepDetail}>
             <View style={styles.sleepDot} />
             <Text style={styles.sleepDetailText}>Deep Sleep: 2h 15m</Text>
+          </View>
+        </View>
+
+        {/* Food Habits Card */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardLabel}>FOOD HABITS</Text>
+            <Utensils size={22} color={Colors.textSecondary} strokeWidth={1.5} />
+          </View>
+
+          <View style={styles.circleContainer}>
+            <CircularProgress value={1850} max={2200} size={140} />
+            <View style={styles.circleInner}>
+              <Text style={styles.circleValue}>1,850</Text>
+              <Text style={styles.circleMax}>/ 2,200 kcal</Text>
+            </View>
+          </View>
+
+          <Text style={styles.nutritionTitle}>Daily Nutrition Summary</Text>
+
+          <View style={styles.mealGrid}>
+            <View style={styles.mealRow}>
+              <TouchableOpacity style={styles.mealButton}>
+                <View style={styles.mealLeft}>
+                  <Croissant size={18} color={Colors.green[600]} strokeWidth={1.5} style={styles.mealIcon} />
+                  <Text style={styles.mealText}>Breakfast</Text>
+                </View>
+                <View style={styles.plusCircle}>
+                  <Plus size={12} color={Colors.green[600]} strokeWidth={2.5} />
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.mealButton}>
+                <View style={styles.mealLeft}>
+                  <Sandwich size={18} color={Colors.green[600]} strokeWidth={1.5} style={styles.mealIcon} />
+                  <Text style={styles.mealText}>Lunch</Text>
+                </View>
+                <View style={styles.plusCircle}>
+                  <Plus size={12} color={Colors.green[600]} strokeWidth={2.5} />
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.mealRow}>
+              <TouchableOpacity style={styles.mealButton}>
+                <View style={styles.mealLeft}>
+                  <Soup size={18} color={Colors.green[600]} strokeWidth={1.5} style={styles.mealIcon} />
+                  <Text style={styles.mealText}>Dinner</Text>
+                </View>
+                <View style={styles.plusCircle}>
+                  <Plus size={12} color={Colors.green[600]} strokeWidth={2.5} />
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.mealButton}>
+                <View style={styles.mealLeft}>
+                  <Cookie size={18} color={Colors.green[600]} strokeWidth={1.5} style={styles.mealIcon} />
+                  <Text style={styles.mealText}>Snacks</Text>
+                </View>
+                <View style={styles.plusCircle}>
+                  <Plus size={12} color={Colors.green[600]} strokeWidth={2.5} />
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -393,5 +458,52 @@ const styles = StyleSheet.create({
     color: Colors.green[700],
     lineHeight: 22,
     fontStyle: 'italic',
+  },
+  mealGrid: {
+    gap: 12,
+  },
+  mealRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  mealButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: Colors.green[50],
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
+  mealLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  mealIcon: {
+    marginRight: 2,
+  },
+  mealText: {
+    fontFamily: 'DMSans-Medium',
+    fontSize: 14,
+    color: Colors.green[700],
+  },
+  plusCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.2,
+    borderColor: Colors.green[600],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nutritionTitle: {
+    fontFamily: 'DMSans-Bold',
+    fontSize: 15,
+    color: Colors.text,
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 16,
   },
 });

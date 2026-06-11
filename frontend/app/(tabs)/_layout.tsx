@@ -89,6 +89,12 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="steps-challenge"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

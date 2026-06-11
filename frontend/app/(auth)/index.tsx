@@ -1,30 +1,10 @@
 import { useState, useRef } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Animated,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, Animated, } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  User,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Info,
-  LogIn,
-  UserPlus,
-  Leaf,
-} from 'lucide-react-native';
+import { User, Mail, Lock, Eye, EyeOff, Info, LogIn, UserPlus, Leaf, } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
+import { setGuideSettings } from '@/utils/guideSettings';
 
 type AuthMode = 'register' | 'signin';
 
@@ -36,7 +16,11 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('');
 
   const handleSubmit = () => {
-    router.replace('/(tabs)');
+    const userNameToSave = mode === 'register' ? (name.trim() || 'Avery') : (email.split('@')[0] || 'Avery');
+    setGuideSettings({
+      userName: userNameToSave
+    });
+    router.replace('/(auth)/personalize');
   };
 
   return (
