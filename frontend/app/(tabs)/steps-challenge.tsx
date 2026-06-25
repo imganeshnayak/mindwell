@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Settings, Award, MoreVertical, ChevronLeft } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { Colors } from '@/constants/colors';
+import { supabase } from '@/lib/supabase';
+import { fetchWeeklyLeaderboard, syncWeeklySteps, LeaderboardEntry } from '@/lib/leaderboard/leaderboardApi';
 
 // Helper for the bar chart
 const CHART_DATA = [
@@ -47,16 +49,103 @@ const LEADERBOARD_DATA = [
 ];
 
 export default function StepsChallengeScreen() {
-  const [activeTab, setActiveTab] = useState<'global' | 'friends'>('global');
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [myEntry, setMyEntry] = useState<LeaderboardEntry | null>(null);
+  const [myRank, setMyRank] = useState<number>(0);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [avgDaily, setAvgDaily] = useState<number>(0);
+  const [chartData, setChartData] = useState<Array<{ day: string; height: string; isToday?: boolean }>>([
+    { day: 'M', height: '10%' },
+    { day: 'T', height: '10%' },
+    { day: 'W', height: '10%' },
+    { day: 'T', height: '10%' },
+    { day: 'F', height: '10%' },
+    { day: 'S', height: '10%' },
+    { day: 'S', height: '10%' },
+  ]);
+
+  const getLevelInfo = (steps: number) => {
+    if (steps <= 5000) return { level: 1, name: 'Novice' };
+    if (steps <= 15000) return { level: 2, name: 'Walker' };
+    if (steps <= 30000) return { level: 3, name: 'Stride' };
+    if (steps <= 50000) return { level: 4, name: 'Pacer' };
+    return { level: 5, name: 'Trailblazer' };
+  };
+
+  const levelInfo = getLevelInfo(myEntry?.total_steps || 0);
+
+  useEffect(() => {
+    async function loadData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setCurrentUserId(user.id);
+      
+      // Ensure user steps are synced to the weekly leaderboard
+      await syncWeeklySteps(user.id);
+      
+      const lb = await fetchWeeklyLeaderboard();
+      setLeaderboard(lb);
+
+      const index = lb.findIndex((entry) => entry.user_id === user.id);
+      if (index !== -1) {
+        setMyEntry(lb[index]);
+        setMyRank(index + 1);
+      }
+
+      // Load real 7-day biometrics history
+      const dates: string[] = [];
+      const daysOfWeek = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+      const tempChartDays: Array<{ day: string; dateStr: string; height: string; isToday?: boolean }> = [];
+      
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(today.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        dates.push(dateStr);
+        tempChartDays.push({
+          day: daysOfWeek[d.getDay()],
+          dateStr,
+          height: '10%',
+          isToday: i === 0,
+        });
+      }
+
+      const { data: bioData } = await supabase
+        .from('biometrics')
+        .select('date, steps, step_goal')
+        .eq('user_id', user.id)
+        .in('date', dates);
+
+      if (bioData && bioData.length > 0) {
+        const bioMap = new Map(bioData.map(b => [b.date, b]));
+        let sumSteps = 0;
+        let countDays = 0;
+
+        tempChartDays.forEach(day => {
+          const matched = bioMap.get(day.dateStr);
+          if (matched) {
+            const pct = Math.min(Math.round((matched.steps / matched.step_goal) * 100), 100);
+            day.height = `${Math.max(pct, 10)}%`;
+            sumSteps += matched.steps;
+            countDays++;
+          }
+        });
+
+        setChartData(tempChartDays.map(({ day, height, isToday }) => ({ day, height, isToday })));
+        setAvgDaily(countDays > 0 ? Math.round(sumSteps / countDays) : 0);
+      }
+    }
+    loadData();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
-        <Image
-          source={{ uri: 'https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=100' }}
-          style={styles.avatar}
-        />
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 4 }}>
+          <ChevronLeft size={28} color={Colors.text} />
+        </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Text style={styles.headerTitle}>Steps Challenge</Text>
         </View>
@@ -77,13 +166,13 @@ export default function StepsChallengeScreen() {
               </View>
               <View style={styles.badge}>
                 <Award size={18} color={Colors.green[600]} style={styles.badgeIcon} />
-                <Text style={styles.badgeText}>Trailblazer{'\n'}Level 5</Text>
+                <Text style={styles.badgeText}>{levelInfo.name}{'\n'}Level {levelInfo.level}</Text>
               </View>
             </View>
 
             {/* Bar Chart */}
             <View style={styles.chartContainer}>
-              {CHART_DATA.map((item, index) => (
+              {chartData.map((item, index) => (
                 <View key={index} style={styles.barColumn}>
                   <View style={styles.barTrack}>
                     <View
@@ -105,12 +194,12 @@ export default function StepsChallengeScreen() {
             <View style={styles.statsContainer}>
               <View style={styles.statBox}>
                 <Text style={styles.statLabel}>AVG DAILY</Text>
-                <Text style={styles.statValue}>8,432</Text>
+                <Text style={styles.statValue}>{avgDaily.toLocaleString()}</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statBox}>
                 <Text style={styles.statLabel}>TOTAL WEEKLY</Text>
-                <Text style={styles.statValue}>59,024</Text>
+                <Text style={styles.statValue}>{(myEntry?.total_steps || 0).toLocaleString()}</Text>
               </View>
             </View>
           </View>
@@ -120,82 +209,75 @@ export default function StepsChallengeScreen() {
         <View style={styles.section}>
           <View style={styles.leaderboardHeader}>
             <Text style={styles.sectionTitle}>Leaderboard</Text>
-            
-            {/* Toggle */}
-            <View style={styles.toggleContainer}>
-              <View
-                style={[
-                  styles.toggleIndicator,
-                  activeTab === 'friends' && styles.toggleIndicatorRight,
-                ]}
-              />
-              <TouchableOpacity
-                style={styles.toggleBtn}
-                onPress={() => setActiveTab('global')}
-                activeOpacity={1}
-              >
-                <Text style={[styles.toggleText, activeTab === 'global' && styles.toggleTextActive]}>
-                  Global
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.toggleBtn}
-                onPress={() => setActiveTab('friends')}
-                activeOpacity={1}
-              >
-                <Text style={[styles.toggleText, activeTab === 'friends' && styles.toggleTextActive]}>
-                  Friends
-                </Text>
-              </TouchableOpacity>
-            </View>
           </View>
 
           <View style={styles.leaderboardList}>
-            {/* Top 3 */}
-            {LEADERBOARD_DATA.map((user) => (
-              <View key={user.id} style={styles.leaderboardCard}>
+            {/* Top Rankers */}
+            {leaderboard.length > 0 ? (
+              leaderboard.slice(0, 10).map((user, index) => {
+                let medalColor = Colors.bgDark;
+                if (index === 0) medalColor = '#d4af37';
+                if (index === 1) medalColor = '#aaa9ad';
+                if (index === 2) medalColor = '#cd7f32';
+
+                const isMe = user.user_id === currentUserId;
+
+                return (
+                  <View key={user.id} style={[styles.leaderboardCard, isMe && styles.currentUserCard]}>
+                    <View style={styles.rankLeft}>
+                      <View style={styles.medalContainer}>
+                        {index < 3 ? (
+                          <Award size={24} color={medalColor} fill={medalColor} />
+                        ) : (
+                          <Text style={styles.currentUserRank}>{index + 1}</Text>
+                        )}
+                      </View>
+                      <Image source={{ uri: user.avatar_url || 'https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=100' }} style={[styles.userAvatar, isMe && styles.currentUserAvatar]} />
+                      <View>
+                        <Text style={styles.userName}>{isMe ? 'You' : (user.display_name || 'Anonymous')}</Text>
+                        <Text style={styles.userTitle}>{index === 0 ? 'Top Trailblazer' : isMe ? 'Keep going!' : 'Walker'}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.rankRight}>
+                      <Text style={styles.userSteps}>{(user.total_steps || 0).toLocaleString()}</Text>
+                      <Text style={styles.stepsLabel}>STEPS</Text>
+                    </View>
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={{ textAlign: 'center', color: Colors.textSecondary }}>No entries yet this week.</Text>
+            )}
+
+            {/* Spacer */}
+            {myRank > 10 && (
+              <View style={styles.spacer}>
+                <MoreVertical size={24} color={Colors.textMuted} />
+              </View>
+            )}
+
+            {/* Current User (if not in top 10) */}
+            {myEntry && myRank > 10 && (
+              <View style={[styles.leaderboardCard, styles.currentUserCard]}>
                 <View style={styles.rankLeft}>
                   <View style={styles.medalContainer}>
-                    <Award size={24} color={user.medalColor} fill={user.medalColor} />
+                    <Text style={styles.currentUserRank}>{myRank}</Text>
                   </View>
-                  <Image source={{ uri: user.avatar }} style={styles.userAvatar} />
+                  <Image
+                    source={{ uri: myEntry.avatar_url || 'https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=100' }}
+                    style={[styles.userAvatar, styles.currentUserAvatar]}
+                  />
                   <View>
-                    <Text style={styles.userName}>{user.name}</Text>
-                    <Text style={styles.userTitle}>{user.title}</Text>
+                    <Text style={styles.userName}>You</Text>
+                    <Text style={styles.userTitle}>Keep going!</Text>
                   </View>
                 </View>
                 <View style={styles.rankRight}>
-                  <Text style={styles.userSteps}>{user.steps}</Text>
+                  <Text style={styles.userSteps}>{(myEntry.total_steps || 0).toLocaleString()}</Text>
                   <Text style={styles.stepsLabel}>STEPS</Text>
                 </View>
               </View>
-            ))}
-
-            {/* Spacer */}
-            <View style={styles.spacer}>
-              <MoreVertical size={24} color={Colors.textMuted} />
-            </View>
-
-            {/* Current User */}
-            <View style={[styles.leaderboardCard, styles.currentUserCard]}>
-              <View style={styles.rankLeft}>
-                <View style={styles.medalContainer}>
-                  <Text style={styles.currentUserRank}>12</Text>
-                </View>
-                <Image
-                  source={{ uri: 'https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=100' }}
-                  style={[styles.userAvatar, styles.currentUserAvatar]}
-                />
-                <View>
-                  <Text style={styles.userName}>You</Text>
-                  <Text style={styles.userTitle}>Top 5% this week</Text>
-                </View>
-              </View>
-              <View style={styles.rankRight}>
-                <Text style={styles.userSteps}>59,024</Text>
-                <Text style={styles.stepsLabel}>STEPS</Text>
-              </View>
-            </View>
+            )}
           </View>
         </View>
 
@@ -215,8 +297,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
   },
   avatar: {
     width: 40,

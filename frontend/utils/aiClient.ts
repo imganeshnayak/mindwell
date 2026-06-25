@@ -1,11 +1,7 @@
-// utils/aiClient.ts
-// AI client that builds a rich, context-aware system prompt and fetches responses
-// from the FreeLLMAPI proxy.
-
+import { supabase } from '@/lib/supabase';
 import { Mood, getMoodSignal } from './moodDetector';
 
-const PROXY_URL = 'http://192.168.1.101:3001/v1/chat/completions';
-// Using local IP address so physical devices and emulators can connect
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || 'http://localhost:5000';
 
 type Message = {
   role: 'user' | 'assistant' | 'system';
@@ -142,12 +138,11 @@ MULTI-BUBBLE FORMAT (CRITICAL — always follow this):
 - Never write one long paragraph in a single bubble
 - Example format: "Aw, I hear you 💙 ||| Rest is so important. ||| Want to try a quick breathing exercise together?"
 
-COACHING ACTION RULES (only when highly relevant to what the user just said):
-- If the user is clearly tired or exhausted → end your last bubble with: [ACTION:BREATHING]
-- If the user is stressed, anxious, or overwhelmed → end your last bubble with: [ACTION:BREATHING]
-- If the user mentions needing movement or a stretch → end your last bubble with: [ACTION:STRETCH]
-- Include at most ONE action tag per response, at the very end after |||
-- Only trigger an action when the user's message clearly calls for it
+COACHING ACTION RULES (CRITICAL: DO NOT over-trigger these):
+- ONLY trigger [ACTION:BREATHING] if the user EXPLICITLY states in their chat message that they are stressed, anxious, overwhelmed, tired, or ask for a breathing exercise. DO NOT infer this from biometrics alone.
+- ONLY trigger [ACTION:STRETCH] if the user EXPLICITLY mentions in their chat message needing movement, feeling stiff, or asks for a stretch.
+- Include at most ONE action tag per response, at the very end after |||.
+- If the user just says "hi", "hello", or is making casual conversation, DO NOT include any ACTION tags.
 
 FREQUENCY RULES:
 ${frequency === 'Low' ? '- Only respond to what is directly asked. Do not offer unsolicited advice.' : ''}
@@ -163,9 +158,11 @@ GUARDRAILS:
 
 export async function fetchAIResponse(
   messages: Message[],
-  apiKey: string,
   systemPrompt: string,
 ): Promise<string> {
+  const sessionRes = await supabase.auth.getSession();
+  const token = sessionRes.data.session?.access_token;
+
   const payload = {
     messages: [
       { role: 'system', content: systemPrompt },
@@ -174,11 +171,11 @@ export async function fetchAIResponse(
   };
 
   try {
-    const response = await fetch(PROXY_URL, {
+    const response = await fetch(`${BACKEND_URL}/api/ai/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(payload),
     });
@@ -194,5 +191,60 @@ export async function fetchAIResponse(
   } catch (error) {
     console.error('Fetch AI Response failed:', error);
     return "Sorry, I'm having a little trouble connecting right now! ||| Make sure the proxy is running. ||| I'll be right back with you 💙";
+  }
+}
+
+export interface EstimatedNutrition {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fats: number;
+}
+
+export async function estimateNutritionFromText(description: string): Promise<EstimatedNutrition | null> {
+  const sessionRes = await supabase.auth.getSession();
+  const token = sessionRes.data.session?.access_token;
+
+  const systemPrompt = `You are a professional nutritionist database assistant.
+Analyze the food item or meal description: "${description}".
+Provide a realistic estimate of the total calories (kcal), protein (g), carbs (g), and fats (g).
+
+Respond ONLY with a JSON object in this exact format, with no markdown, backticks or code block fences:
+{"calories": number, "protein": number, "carbs": number, "fats": number}
+`;
+
+  const payload = {
+    messages: [
+      { role: 'system', content: systemPrompt },
+    ],
+  };
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/ai/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error status ${response.status}`);
+    }
+
+    const data = await response.json();
+    const textContent = data.choices[0].message.content.trim();
+    const cleanJSON = textContent.replace(/```json|```/g, '').trim();
+    const nutrition = JSON.parse(cleanJSON);
+    return {
+      calories: Number(nutrition.calories) || 0,
+      protein: Number(nutrition.protein) || 0,
+      carbs: Number(nutrition.carbs) || 0,
+      fats: Number(nutrition.fats) || 0,
+    };
+  } catch (error) {
+    console.error('Failed to estimate nutrition from AI:', error);
+    return null;
   }
 }

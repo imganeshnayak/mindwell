@@ -1,21 +1,22 @@
 {
-  "name": "backend",
+  "name": "mindwell-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "MindWell backend — Express + Supabase",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"

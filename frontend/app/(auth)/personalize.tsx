@@ -49,6 +49,7 @@ export default function PersonalizeScreen() {
         frequency: selectedFrequency,
         focus: selectedFocus,
         role: selectedRole,
+        onboardingDone: true,
       });
       router.replace('/(tabs)');
     }

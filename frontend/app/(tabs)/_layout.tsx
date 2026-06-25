@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { View, Text, StyleSheet, Platform } from 'react-native';
-import { BarChart2, ShoppingBag } from 'lucide-react-native';
+import { BarChart2, MoreHorizontal } from 'lucide-react-native';
+import { Circle } from 'react-native-svg';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/colors';
 
@@ -28,6 +29,47 @@ function SanctuaryIcon({ color, size }: { color: string; size: number }) {
         fill="none"
         strokeLinecap="round"
       />
+    </Svg>
+  );
+}
+
+function TreeIcon({ color, size }: { color: string; size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      {/* Trunk */}
+      <Path
+        d="M12 22 L12 14"
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      {/* Ground roots */}
+      <Path
+        d="M9 22 L15 22"
+        stroke={color}
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      {/* Left branch */}
+      <Path
+        d="M12 17 L8 13"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      {/* Right branch */}
+      <Path
+        d="M12 15 L16 11"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      {/* Main canopy circle */}
+      <Circle cx="12" cy="10" r="5" stroke={color} strokeWidth="1.5" fill="none" />
+      {/* Left canopy */}
+      <Circle cx="7.5" cy="12" r="3.2" stroke={color} strokeWidth="1.5" fill="none" />
+      {/* Right canopy */}
+      <Circle cx="16.5" cy="10" r="3.2" stroke={color} strokeWidth="1.5" fill="none" />
     </Svg>
   );
 }
@@ -73,18 +115,29 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.tabItem, focused && styles.tabItemActive]}>
               <BarChart2 size={22} color={focused ? Colors.green[600] : Colors.textSecondary} strokeWidth={1.5} />
-              <TabLabel label="Biometrics" focused={focused} />
+              <TabLabel label="Metrics" focused={focused} />
             </View>
           ),
         }}
       />
       <Tabs.Screen
-        name="marketplace"
+        name="tree"
         options={{
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.tabItem, focused && styles.tabItemActive]}>
-              <ShoppingBag size={22} color={focused ? Colors.green[600] : Colors.textSecondary} strokeWidth={1.5} />
-              <TabLabel label="Marketplace" focused={focused} />
+              <TreeIcon color={focused ? Colors.green[600] : Colors.textSecondary} size={22} />
+              <TabLabel label="Tree" focused={focused} />
+            </View>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="more"
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <View style={[styles.tabItem, focused && styles.tabItemActive]}>
+              <MoreHorizontal size={22} color={focused ? Colors.green[600] : Colors.textSecondary} strokeWidth={1.5} />
+              <TabLabel label="More" focused={focused} />
             </View>
           ),
         }}
@@ -116,7 +169,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 30,
     gap: 4,
-    minWidth: 90,
+    minWidth: 72,
   },
   tabItemActive: {
     backgroundColor: Colors.green[100],

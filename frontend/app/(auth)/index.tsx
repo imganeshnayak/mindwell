@@ -1,10 +1,15 @@
 import { useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Image, Animated, } from 'react-native';
+import {
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  ScrollView, KeyboardAvoidingView, Platform, Image,
+  Animated, ActivityIndicator, Alert,
+} from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Mail, Lock, Eye, EyeOff, Info, LogIn, UserPlus, Leaf, } from 'lucide-react-native';
+import { User, Mail, Lock, Eye, EyeOff, Info, LogIn, UserPlus, Leaf } from 'lucide-react-native';
 import { Colors } from '@/constants/colors';
 import { setGuideSettings } from '@/utils/guideSettings';
+import { signUp, signIn } from '@/lib/auth/authApi';
 
 type AuthMode = 'register' | 'signin';
 
@@ -14,13 +19,49 @@ export default function AuthScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
-    const userNameToSave = mode === 'register' ? (name.trim() || 'Avery') : (email.split('@')[0] || 'Avery');
-    setGuideSettings({
-      userName: userNameToSave
-    });
-    router.replace('/(auth)/personalize');
+  const handleSubmit = async () => {
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Missing fields', 'Please enter your email and password.');
+      return;
+    }
+    if (password.length < 6) {
+      Alert.alert('Weak password', 'Password must be at least 6 characters.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (mode === 'register') {
+        const userName = name.trim() || 'Avery';
+        const { userId, error } = await signUp(email, password, userName);
+
+        if (error) {
+          Alert.alert('Registration failed', error.message);
+          return;
+        }
+
+        // Save name locally so personalize screen has it right away
+        setGuideSettings({ userName });
+        router.replace('/(auth)/personalize');
+
+      } else {
+        const { userId, error } = await signIn(email, password);
+
+        if (error) {
+          Alert.alert('Sign in failed', error.message);
+          return;
+        }
+
+        // Derive display name from email as fallback
+        const userName = email.split('@')[0] || 'Avery';
+        setGuideSettings({ userName });
+        router.replace('/(tabs)');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -89,6 +130,7 @@ export default function AuthScreen() {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                 />
               </View>
             </View>
@@ -115,10 +157,19 @@ export default function AuthScreen() {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.85}>
-              <Text style={styles.submitBtnText}>
-                {mode === 'register' ? 'Create Account' : 'Sign In'}
-              </Text>
+            <TouchableOpacity
+              style={[styles.submitBtn, loading && styles.submitBtnDisabled]}
+              onPress={handleSubmit}
+              activeOpacity={0.85}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={Colors.white} />
+              ) : (
+                <Text style={styles.submitBtnText}>
+                  {mode === 'register' ? 'Create Account' : 'Sign In'}
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
 
@@ -170,13 +221,8 @@ export default function AuthScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.bg,
-  },
-  flex: {
-    flex: 1,
-  },
+  safe: { flex: 1, backgroundColor: Colors.bg },
+  flex: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -184,28 +230,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 16,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  headerTitle: {
-    fontFamily: 'DMSans-Medium',
-    fontSize: 16,
-    color: Colors.text,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 24,
-  },
-  logoSection: {
-    alignItems: 'center',
-    marginBottom: 32,
-    marginTop: 16,
-  },
-  leafIcon: {
-    marginBottom: 16,
-  },
+  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  headerTitle: { fontFamily: 'DMSans-Medium', fontSize: 16, color: Colors.text },
+  scrollContent: { paddingHorizontal: 24, paddingBottom: 24 },
+  logoSection: { alignItems: 'center', marginBottom: 32, marginTop: 16 },
+  leafIcon: { marginBottom: 16 },
   heroTitle: {
     fontFamily: 'PlayfairDisplay-Bold',
     fontSize: 28,
@@ -231,14 +260,8 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 3,
   },
-  fieldGroup: {
-    gap: 8,
-  },
-  fieldLabel: {
-    fontFamily: 'DMSans-Medium',
-    fontSize: 14,
-    color: Colors.text,
-  },
+  fieldGroup: { gap: 8 },
+  fieldLabel: { fontFamily: 'DMSans-Medium', fontSize: 14, color: Colors.text },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -248,16 +271,8 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     gap: 12,
   },
-  input: {
-    flex: 1,
-    fontFamily: 'DMSans-Regular',
-    fontSize: 15,
-    color: Colors.text,
-    padding: 0,
-  },
-  inputFlex: {
-    flex: 1,
-  },
+  input: { flex: 1, fontFamily: 'DMSans-Regular', fontSize: 15, color: Colors.text, padding: 0 },
+  inputFlex: { flex: 1 },
   submitBtn: {
     backgroundColor: Colors.tan,
     borderRadius: 14,
@@ -265,34 +280,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  submitBtnText: {
-    fontFamily: 'DMSans-Bold',
-    fontSize: 16,
-    color: Colors.white,
-    letterSpacing: 0.3,
-  },
-  switchMode: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  switchModeText: {
-    fontFamily: 'DMSans-Regular',
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  switchModeLink: {
-    fontFamily: 'DMSans-Bold',
-    color: Colors.green[600],
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  bottomImage: {
-    width: 160,
-    height: 130,
-    borderRadius: 12,
-  },
+  submitBtnDisabled: { opacity: 0.7 },
+  submitBtnText: { fontFamily: 'DMSans-Bold', fontSize: 16, color: Colors.white, letterSpacing: 0.3 },
+  switchMode: { alignItems: 'center', paddingVertical: 20 },
+  switchModeText: { fontFamily: 'DMSans-Regular', fontSize: 14, color: Colors.textSecondary },
+  switchModeLink: { fontFamily: 'DMSans-Bold', color: Colors.green[600] },
+  imageContainer: { alignItems: 'center', marginTop: 8 },
+  bottomImage: { width: 160, height: 130, borderRadius: 12 },
   tabBar: {
     flexDirection: 'row',
     backgroundColor: Colors.bg,
@@ -310,16 +304,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginHorizontal: 8,
   },
-  tabItemActive: {
-    backgroundColor: Colors.green[100],
-  },
-  tabLabel: {
-    fontFamily: 'DMSans-Regular',
-    fontSize: 12,
-    color: Colors.textSecondary,
-  },
-  tabLabelActive: {
-    fontFamily: 'DMSans-Medium',
-    color: Colors.green[600],
-  },
+  tabItemActive: { backgroundColor: Colors.green[100] },
+  tabLabel: { fontFamily: 'DMSans-Regular', fontSize: 12, color: Colors.textSecondary },
+  tabLabelActive: { fontFamily: 'DMSans-Medium', color: Colors.green[600] },
 });

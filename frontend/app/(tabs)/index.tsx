@@ -20,6 +20,11 @@ import { getGuideSettings, subscribeToSettings } from '@/utils/guideSettings';
 import { detectMood, MOOD_ICONS, Mood } from '@/utils/moodDetector';
 import { getIdleTimeout, getProactivePrompt } from '@/utils/proactiveMessages';
 import WellnessActionCard, { ActionType } from '@/components/WellnessActionCard';
+import { supabase } from '@/lib/supabase';
+import { fetchTodayChatHistory, saveChatMessage } from '@/lib/chat/chatApi';
+import { fetchTodayBiometrics } from '@/lib/biometrics/biometricsApi';
+import { fetchTodayMeals } from '@/lib/nutrition/nutritionApi';
+import { completeTask } from '@/lib/tree/treeApi';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,7 +48,6 @@ type Message = ChatMessage | ActionMessage;
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const API_KEY = 'freellmapi-69ff287cd06690047ae31fca8f5d1b424ae932e1edc85c87';
 const API_WINDOW = 12; // Max messages sent to AI per request
 const WORDS_PER_MIN = 40; // Simulated human typing speed
 const MAX_TYPING_DELAY = 3500; // Cap typing delay at 3.5 seconds per bubble
@@ -163,6 +167,7 @@ export default function SanctuaryScreen() {
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showQuickReplies, setShowQuickReplies] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const proactiveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isSendingRef = useRef(false);
@@ -185,11 +190,56 @@ export default function SanctuaryScreen() {
   }, []);
 
   useEffect(() => {
-    initMessages(getGuideSettings());
+    async function loadUserAndHistory() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      setUserId(user.id);
+
+      const history = await fetchTodayChatHistory(user.id);
+      if (history.length > 0) {
+        const mapped: Message[] = [];
+        history.forEach((row) => {
+          mapped.push({
+            id: row.id || makeId(),
+            text: row.content,
+            from: row.role === 'user' ? 'user' : 'ai',
+            timestamp: formatTime(row.created_at ? new Date(row.created_at) : new Date()),
+          });
+          if (row.action_type) {
+            mapped.push({
+              id: (row.id || makeId()) + '-action',
+              from: 'action',
+              actionType: row.action_type as ActionType,
+              timestamp: formatTime(row.created_at ? new Date(row.created_at) : new Date()),
+            });
+          }
+        });
+        setMessages(mapped);
+        setShowQuickReplies(false);
+      } else {
+        initMessages(getGuideSettings());
+      }
+    }
+
+    loadUserAndHistory();
+
     return subscribeToSettings(() => {
       const updated = getGuideSettings();
       setLocalSettings(updated);
-      initMessages(updated);
+      setMessages(prev => {
+        if (prev.length === 0 || prev.every(m => m.id.startsWith('init-'))) {
+          const raw = getInitialMessage(updated.personality, updated.userName);
+          const bubbles = raw.split('|||').map(s => s.trim()).filter(Boolean);
+          const now = new Date();
+          return bubbles.map((text, i) => ({
+            id: `init-${i}`,
+            text,
+            from: 'ai' as const,
+            timestamp: formatTime(now),
+          }));
+        }
+        return prev;
+      });
     });
   }, [initMessages]);
 
@@ -228,6 +278,24 @@ export default function SanctuaryScreen() {
     isSendingRef.current = true;
     const settings = getGuideSettings();
 
+    let biometricsContext = undefined;
+    if (userId) {
+      const bio = await fetchTodayBiometrics(userId);
+      const meals = await fetchTodayMeals(userId);
+      const calories = meals.reduce((sum, m) => sum + m.calories, 0);
+      if (bio) {
+        biometricsContext = {
+          steps: bio.steps,
+          stepGoal: bio.step_goal,
+          sleepHours: bio.sleep_hours,
+          sleepMinutes: bio.sleep_minutes,
+          calories: calories,
+          calorieGoal: 2200,
+          vitalityScore: bio.vitality_score,
+        };
+      }
+    }
+
     const systemPrompt = buildSystemPrompt({
       guideName: settings.guideName,
       userName: settings.userName,
@@ -238,6 +306,7 @@ export default function SanctuaryScreen() {
       gender: settings.gender,
       role: settings.role,
       mood: currentMood,
+      biometrics: biometricsContext,
       overridePrompt,
     });
 
@@ -245,7 +314,7 @@ export default function SanctuaryScreen() {
     const trimmed = chatHistory.slice(-API_WINDOW);
 
     setIsTyping(true);
-    const rawResponse = await fetchAIResponse(trimmed, API_KEY, systemPrompt);
+    const rawResponse = await fetchAIResponse(trimmed, systemPrompt);
     setIsTyping(false);
 
     // Detect and extract action tag before splitting
@@ -277,6 +346,12 @@ export default function SanctuaryScreen() {
         timestamp: formatTime(new Date()),
       };
       setMessages(prev => [...prev, aiMsg]);
+
+      // Save to database
+      if (userId) {
+        const isLastBubble = i === bubbles.length - 1;
+        await saveChatMessage(userId, 'assistant', bubble, isLastBubble ? detectedAction : null);
+      }
     }
 
     // Inject wellness action card if action was detected
@@ -293,7 +368,7 @@ export default function SanctuaryScreen() {
 
     isSendingRef.current = false;
     resetProactiveTimer();
-  }, [currentMood, resetProactiveTimer]);
+  }, [currentMood, resetProactiveTimer, userId]);
 
   // ── Handle user send ──
   const handleSend = async (text?: string) => {
@@ -319,6 +394,13 @@ export default function SanctuaryScreen() {
     };
     setMessages(prev => [...prev, userMsg]);
 
+    // Save to database
+    if (userId) {
+      await saveChatMessage(userId, 'user', msgText);
+      // Every message sent = one task towards tree growth
+      completeTask(userId); // fire-and-forget, non-blocking
+    }
+
     // Build chat history from current messages (exclude action cards)
     setMessages(prev => {
       const chatOnly = prev
@@ -342,12 +424,23 @@ export default function SanctuaryScreen() {
     // Remove the action card
     setMessages(prev => prev.filter(m => m.id !== msgId));
 
+    // Tree grows: completing a wellness exercise is a task
+    if (userId) {
+      completeTask(userId); // fire-and-forget
+    }
+
+    // Save user action follow-up message to database
+    const content = '[The user just completed a wellness exercise.]';
+    if (userId) {
+      await saveChatMessage(userId, 'user', content);
+    }
+
     // AI follows up naturally
     const followUp: { role: 'user' | 'assistant'; content: string }[] = [
-      { role: 'user', content: '[The user just completed a wellness exercise.]' }
+      { role: 'user', content }
     ];
     await sendAIBubbles(followUp);
-  }, [sendAIBubbles]);
+  }, [sendAIBubbles, userId]);
 
   // ─── Render ───────────────────────────────────────────────────────────────
 

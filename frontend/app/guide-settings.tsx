@@ -16,6 +16,8 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '@/constants/colors';
 import { getGuideSettings, setGuideSettings, GuideSettings } from '@/utils/guideSettings';
+import { uploadAvatar } from '@/lib/guide-settings/guideSettingsApi';
+import { supabase } from '@/lib/supabase';
 
 export default function GuideSettingsScreen() {
   const [settings, setSettings] = useState<GuideSettings>(getGuideSettings());
@@ -34,8 +36,23 @@ export default function GuideSettingsScreen() {
     }
   };
 
-  const saveSettings = () => {
-    setGuideSettings(settings);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const saveSettings = async () => {
+    setIsSaving(true);
+    let avatarUrl = settings.avatar;
+
+    // If it's a local file URI (from image picker) -> upload it
+    if (avatarUrl && !avatarUrl.startsWith('http')) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const publicUrl = await uploadAvatar(user.id, avatarUrl);
+        if (publicUrl) avatarUrl = publicUrl;
+      }
+    }
+
+    await setGuideSettings({ ...settings, avatar: avatarUrl });
+    setIsSaving(false);
     router.back();
   };
 
@@ -217,8 +234,8 @@ export default function GuideSettingsScreen() {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton} onPress={saveSettings}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+        <TouchableOpacity style={[styles.saveButton, isSaving && styles.saveButtonDisabled]} onPress={saveSettings} disabled={isSaving}>
+          <Text style={styles.saveButtonText}>{isSaving ? 'Saving...' : 'Save Changes'}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -386,6 +403,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 30,
     alignItems: 'center',
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
   },
   saveButtonText: {
     fontFamily: 'DMSans-Bold',

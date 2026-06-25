@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Settings, ShoppingCart } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Settings, ShoppingCart, Sparkles, ChevronRight } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Colors } from '@/constants/colors';
 
@@ -123,7 +124,7 @@ function ProductCard({ product, style }: { product: Product; style?: object }) {
   );
 }
 
-export default function MarketplaceScreen() {
+export default function MoreScreen() {
   const narrowProducts = PRODUCTS.filter(p => !p.wide);
   const wideProducts = PRODUCTS.filter(p => p.wide);
 
@@ -144,7 +145,35 @@ export default function MarketplaceScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.sectionLabel}>MARKETPLACE</Text>
+        <Text style={styles.sectionLabel}>MY JOURNEY</Text>
+        
+        {/* Tarot Card Feature */}
+        <TouchableOpacity style={styles.tarotCard} activeOpacity={0.85}>
+          <LinearGradient
+            colors={['#2D1E4A', '#1A102E']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            borderRadius={20}
+          />
+          <View style={styles.tarotContent}>
+            <View style={styles.tarotHeader}>
+              <View style={styles.tarotIconBox}>
+                <Sparkles size={20} color="#E4D3A1" />
+              </View>
+              <View style={styles.tarotBadge}>
+                <Text style={styles.tarotBadgeText}>Daily Draw</Text>
+              </View>
+            </View>
+            <View style={styles.tarotBody}>
+              <Text style={styles.tarotTitle}>Daily Tarot Reading</Text>
+              <Text style={styles.tarotDesc}>Pull your card for today's guidance and spiritual reflection.</Text>
+            </View>
+          </View>
+          <ChevronRight size={20} color="#E4D3A1" style={styles.tarotChevron} />
+        </TouchableOpacity>
+
+        <Text style={[styles.sectionLabel, { marginTop: 24 }]}>MARKETPLACE</Text>
         <Text style={styles.pageTitle}>Recommended for You.</Text>
         <Text style={styles.pageSubtitle}>
           Handpicked essentials designed to anchor your senses and nurture your emotional well-being.
@@ -159,7 +188,7 @@ export default function MarketplaceScreen() {
 
         {/* Wide products */}
         {wideProducts.map(p => (
-          <ProductCard key={p.id} product={p} style={styles.wideCard} />
+            <ProductCard key={p.id} product={p} style={styles.wideCard} />
         ))}
 
         {/* Second row of narrow */}
@@ -229,6 +258,75 @@ const styles = StyleSheet.create({
     color: Colors.green[500],
     letterSpacing: 2.5,
     marginTop: 4,
+  },
+  tarotCard: {
+    width: '100%',
+    borderRadius: 20,
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: '#2D1E4A',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 8,
+    marginBottom: 8,
+  },
+  tarotContent: {
+    padding: 20,
+    zIndex: 1,
+  },
+  tarotHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  tarotIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(228, 211, 161, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(228, 211, 161, 0.3)',
+  },
+  tarotBadge: {
+    backgroundColor: 'rgba(228, 211, 161, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(228, 211, 161, 0.3)',
+  },
+  tarotBadgeText: {
+    fontFamily: 'DMSans-Bold',
+    fontSize: 10,
+    color: '#E4D3A1',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  tarotBody: {
+    gap: 6,
+    paddingRight: 30,
+  },
+  tarotTitle: {
+    fontFamily: 'PlayfairDisplay-Bold',
+    fontSize: 22,
+    color: '#F9F6EE',
+  },
+  tarotDesc: {
+    fontFamily: 'DMSans-Regular',
+    fontSize: 14,
+    color: 'rgba(249, 246, 238, 0.75)',
+    lineHeight: 20,
+  },
+  tarotChevron: {
+    position: 'absolute',
+    right: 20,
+    top: '50%',
+    marginTop: -10,
+    opacity: 0.8,
   },
   pageTitle: {
     fontFamily: 'PlayfairDisplay-Bold',
