@@ -148,6 +148,12 @@ export default function TabsLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="tarot-reading"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

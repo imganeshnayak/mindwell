@@ -2,8 +2,8 @@
 // Supabase client singleton — used across the entire frontend.
 // Anon key is safe to expose in client; RLS protects all data.
 
-import { createClient } from '@supabase/supabase-js';
 import 'react-native-url-polyfill/auto';
+import { createClient } from '@supabase/supabase-js';
 import * as FileSystem from 'expo-file-system/legacy';
 
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL as string;

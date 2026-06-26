@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Settings, ShoppingCart, Sparkles, ChevronRight } from 'lucide-react-native';
 import Svg, { Path } from 'react-native-svg';
+import { router } from 'expo-router';
 import { Colors } from '@/constants/colors';
 
 function SanctuaryIcon({ size = 28, color = Colors.textMuted }: { size?: number; color?: string }) {
@@ -148,13 +149,12 @@ export default function MoreScreen() {
         <Text style={styles.sectionLabel}>MY JOURNEY</Text>
         
         {/* Tarot Card Feature */}
-        <TouchableOpacity style={styles.tarotCard} activeOpacity={0.85}>
+        <TouchableOpacity style={styles.tarotCard} activeOpacity={0.85} onPress={() => router.push('/tarot-reading')}>
           <LinearGradient
             colors={['#2D1E4A', '#1A102E']}
-            style={StyleSheet.absoluteFill}
+            style={styles.tarotGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            borderRadius={20}
           />
           <View style={styles.tarotContent}>
             <View style={styles.tarotHeader}>
@@ -258,6 +258,10 @@ const styles = StyleSheet.create({
     color: Colors.green[500],
     letterSpacing: 2.5,
     marginTop: 4,
+  },
+  tarotGradient: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 20,
   },
   tarotCard: {
     width: '100%',

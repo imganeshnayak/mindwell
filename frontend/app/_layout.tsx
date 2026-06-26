@@ -39,15 +39,21 @@ export default function RootLayout() {
     let mounted = true;
 
     async function checkAuth() {
-      const { data: { session: initialSession } } = await supabase.auth.getSession();
-      
-      if (initialSession) {
-        await hydrateGuideSettings();
-      }
-      
-      if (mounted) {
-        setSession(initialSession);
-        setHydrationDone(true);
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        
+        if (initialSession) {
+          await hydrateGuideSettings();
+        }
+        
+        if (mounted) {
+          setSession(initialSession);
+        }
+      } catch (err) {
+        console.warn('[RootLayout] Auth check failed (network error), treating as logged out:', err);
+        if (mounted) setSession(null);
+      } finally {
+        if (mounted) setHydrationDone(true);
       }
     }
 
@@ -56,8 +62,12 @@ export default function RootLayout() {
     // Listen for sign-in / sign-out events
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, newSession) => {
-        if (newSession) {
-          await hydrateGuideSettings();
+        try {
+          if (newSession) {
+            await hydrateGuideSettings();
+          }
+        } catch (err) {
+          console.warn('[RootLayout] Error hydrating settings:', err);
         }
         if (mounted) {
           setSession(newSession);
